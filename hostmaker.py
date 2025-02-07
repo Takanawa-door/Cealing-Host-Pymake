@@ -1,6 +1,7 @@
 import app
 import colorama
 import traceback
+import logger
 
 # Two modes:
 # - Input
@@ -18,21 +19,25 @@ if __name__ == '__main__':
                 break
             try: 
                 outputList.append(app.getDomainAnalize(inputDomain, False))
-                print(f"Successfully added {inputDomain} to the list.")
+                logger.LogInfo(f"Successfully added {inputDomain} to the list.")
             except:
-                print(f"{colorama.Fore.LIGHTRED_EX}{traceback.format_exc()}{colorama.Fore.RESET}")
+                logger.LogError(traceback.format_exc())
 
         print(f"Successfully added {len(outputList)} items to the list.")
     elif LOGIC_LAUNCHER == "Web":
         pass
 
-    outputPath = input("Input the output file path('|' for quit directly): ")
-    if outputList == "|": 
+    outputPath = input("Input the output file path('|' for quit directly; '>' for print here): ")
+    if outputPath == "|": 
+        exit()
+    elif outputPath == ">":
+        print(outputList)
         exit()
 
     try:
         outputStr = str(outputList).replace("'", '"')
         with open(outputPath, "w") as f:
             f.write(outputStr)
+        logger.LogInfo("Finished writing.")
     except:
-        print(f"{colorama.Fore.LIGHTRED_EX}{traceback.format_exc()}{colorama.Fore.RESET}")
+        logger.LogFatal(traceback.format_exc())

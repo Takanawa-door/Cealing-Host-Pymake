@@ -5,6 +5,9 @@ import requester
 import socket
 import random
 import base64
+import ping3
+import logger
+import traceback
 
 # -- MAJOR FUNCTIONS --
 
@@ -21,17 +24,53 @@ def getInformationFromDomain(domain: str):
                        headers = requester.headers, proxies = random.choice(requester.ipGents))
     return res.json()
 
+def averageDelay(ipAddress: str):
+    summary = 0
+    realTimes = 0
+    for i in range(3):
+        try:
+            summary += ping3.ping(ipAddress)
+            realTimes += 1
+        except:
+            pass
+    return summary / realTimes if realTimes != 0 else None
+
+
 def analizeResponseInformation(response: str, convertFromIPv6toIPv4: bool = True):
     if not response: raise AttributeError("Response is empty. 'Answer' no found.")
     majorRes = response["Answer"]
     requestUrl = response["Question"][0]["name"]
-    applyIPAddresGet = majorRes[-1]["data"]
+    applyIPAddresGet = None
+    applyIPAddres = None
+
+    # 优选 IP
+    miniDelay = None
+    for i in majorRes:
+        ipAddress = i["data"]
+        try:
+            delay = averageDelay(ipAddress)
+            logger.LogInfo(f"Average delay of {ipAddress}: {delay}.")
+            if delay is None: continue
+            if miniDelay is None or delay < miniDelay:
+                miniDelay = delay
+                applyIPAddresGet = ipAddress
+        except:
+            logger.LogInfo(f"Failed to test {ipAddress}...\n{traceback.format_exc()}")
+
+    if applyIPAddresGet is None:
+        logger.LogWarn("None of the IP addresses are available. Using the last one.")
+        applyIPAddresGet = majorRes[-1]["data"]
     applyIPAddres = applyIPAddresGet
+
+    logger.LogInfo(f"Selected {applyIPAddresGet}(Delay: {delay}).")
 
     # IPv6 -> IPv4 if necessary
     if convertFromIPv6toIPv4:
-        ip6_net = socket.inet_pton(socket.AF_INET6, applyIPAddresGet)[-4:]
-        applyIPAddres = socket.inet_ntoa(ip6_net)
+        try:
+            ip6_net = socket.inet_pton(socket.AF_INET6, applyIPAddresGet)[-4:]
+            applyIPAddres = socket.inet_ntoa(ip6_net)
+        except:
+            pass
 
     # SPECIAL FIX: 纠正多余的点
     requestUrl = requestUrl[:-1]
