@@ -1,8 +1,8 @@
 # Cealing Host Pymake
 
-本项目提供了 Python 实现的 [Cealing-Host](https://github.com/SpaceTimee/Cealing-Host) Maker，用于生成 Cealing-Host 的配置文件，支持 IP 优选功能。
+本项目提供了 Python 实现的 [Cealing-Host](https://github.com/SpaceTimee/Cealing-Host) Generator，用于生成 Cealing-Host 的配置文件，支持 IP 优选功能。
 
-~~起因是因为不知道为什么 SpaceTimee 的 Maker 不能用，虽然我已经很久没有 Pull 了但是写都写了。~~
+~~起因是因为不知道为什么 SpaceTimee 的 Generator 不能用，虽然我已经很久没有 Pull 了但是写都写了。~~
 
 ## 安装
 
