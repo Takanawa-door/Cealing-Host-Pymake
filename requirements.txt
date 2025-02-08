@@ -1,0 +1,4 @@
+colorama>=0.4.6
+fake_useragent>=2.0.3
+ping3>=4.0.8
+Requests>=2.32.3

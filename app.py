@@ -36,33 +36,39 @@ def averageDelay(ipAddress: str):
     return summary / realTimes if realTimes != 0 else None
 
 
-def analizeResponseInformation(response: str, convertFromIPv6toIPv4: bool = True):
-    if not response: raise AttributeError("Response is empty. 'Answer' no found.")
+def analizeResponseInformation(response: str, convertFromIPv6toIPv4: bool = True, selectIP: bool = True):
+    if not response or "Answer" not in response:
+        raise AttributeError("Response is empty. 'Answer' no found.")
     majorRes = response["Answer"]
     requestUrl = response["Question"][0]["name"]
     applyIPAddresGet = None
     applyIPAddres = None
-
-    # 优选 IP
     miniDelay = None
-    for i in majorRes:
-        ipAddress = i["data"]
-        try:
-            delay = averageDelay(ipAddress)
-            logger.LogInfo(f"Average delay of {ipAddress}: {delay}.")
-            if delay is None: continue
-            if miniDelay is None or delay < miniDelay:
-                miniDelay = delay
-                applyIPAddresGet = ipAddress
-        except:
-            logger.LogInfo(f"Failed to test {ipAddress}...\n{traceback.format_exc()}")
 
-    if applyIPAddresGet is None:
-        logger.LogWarn("None of the IP addresses are available. Using the last one.")
+    logger.LogInfo(f"Found {len(majorRes)} IP addresses.")
+
+    if not selectIP:
         applyIPAddresGet = majorRes[-1]["data"]
+        applyIPAddres = applyIPAddresGet
+
+    else: # 优选 IP
+        for i in majorRes:
+            ipAddress = i["data"]
+            try:
+                delay = averageDelay(ipAddress)
+                logger.LogInfo(f"Average delay of {ipAddress}: {delay}.")
+                if delay is None: continue
+                if miniDelay is None or delay < miniDelay:
+                    miniDelay = delay
+                    applyIPAddresGet = ipAddress
+            except:
+                logger.LogInfo(f"Failed to test {ipAddress}...\n{traceback.format_exc()}")
+        if applyIPAddresGet is None:
+            logger.LogWarn("None of the IP addresses are available. Using the last one.")
+            applyIPAddresGet = majorRes[-1]["data"]
     applyIPAddres = applyIPAddresGet
 
-    logger.LogInfo(f"Selected {applyIPAddresGet}(Delay: {delay}).")
+    logger.LogInfo(f"Selected {applyIPAddresGet}(Delay: {miniDelay}).")
 
     # IPv6 -> IPv4 if necessary
     if convertFromIPv6toIPv4:
@@ -72,13 +78,13 @@ def analizeResponseInformation(response: str, convertFromIPv6toIPv4: bool = True
         except:
             pass
 
-    # SPECIAL FIX: 纠正多余的点
+    # 删除根域名标识
     requestUrl = requestUrl[:-1]
 
     return [[f"*{requestUrl}"], "", str(applyIPAddres)]
 
-def getDomainAnalize(domain: str, convertFromIPv6toIPv4: bool = True):
-    return analizeResponseInformation(getInformationFromDomain(domain), convertFromIPv6toIPv4)
+def getDomainAnalize(domain: str, convertFromIPv6toIPv4: bool = True, selectIP: bool = True):
+    return analizeResponseInformation(getInformationFromDomain(domain), convertFromIPv6toIPv4, selectIP)
 
 def getFromWeb(url: str = "https://gitlab.com/gfwlist/gfwlist/raw/master/gfwlist.txt", readFromLocal: bool = False):
     is_general_list = False

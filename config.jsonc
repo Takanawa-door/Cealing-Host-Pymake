@@ -1,0 +1,25 @@
+{
+    // OutputFile:
+    // The result of cealing rules will be written in the specific file.
+    // You can use ">" to write to the terminal.
+    // You can also use "|" to write nothing.
+    // Default: output.json
+    "OutputFile": "output.json",
+
+    // ConvertIPv6ToIPv4:
+    // Decide if the program will convert IPv6 to IPv4 while adding to the host list.
+    // - true (Default)
+    // - false
+    "ConvertIPv6ToIPv4": false,
+
+    // SelectIP
+    // Decide if the program will choose the fastest IP address for the website input.
+    // - true (Default)
+    // - false
+    "SelectIP": true,
+
+    // WebListFile
+    // The file path of the website list.
+    // Default: weblist.txt
+    "WebListFile": "./weblist.txt"
+}
