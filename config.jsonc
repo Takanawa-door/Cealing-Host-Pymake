@@ -6,6 +6,12 @@
     // Default: output.json
     "OutputFile": "output.json",
 
+    // OutputFormat:
+    // The format of the output file.
+    // - json (Default)
+    // - hosts: The format of hosts file.
+    "OutputFormat": "json",
+
     // ConvertIPv6ToIPv4:
     // Decide if the program will convert IPv6 to IPv4 while adding to the host list.
     // - true (Default)
@@ -21,5 +27,10 @@
     // WebListFile
     // The file path of the website list.
     // Default: weblist.txt
-    "WebListFile": "./weblist.txt"
+    "WebListFile": "./weblist.txt",
+
+    // PingMaxTryTimes
+    // The maximum number of times to try pinging a website.
+    // Default: 3
+    "PingMaxTryTimes": 3
 }

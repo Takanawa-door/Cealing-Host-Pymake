@@ -4,7 +4,14 @@ import json
 import traceback
 import logger
 
+SIGN_WRITE_TO_CONSOLE = ">"
+SIGN_WRITE_TO_NUL = "|"
+
 def readConfigFile():
+    """
+    读取配置文件。
+    """
+
     config = None
     try: 
         with open("./config.jsonc", "r") as f:
@@ -20,6 +27,7 @@ def readConfigFile():
         assert "OutputFile" in config.keys(), "OutputFile"
         assert config["ConvertIPv6ToIPv4"] in [True, False], "ConvertIPv6ToIPv4"
         assert config["SelectIP"] in [True, False], "SelectIP"
+        assert type(config["PingMaxTryTimes"]) == int, "PingMaxTryTimes"
     except AssertionError as e:
         logger.LogFatal(f"The following configuration goes wrong: {e}.")
         exit(-1)
@@ -30,12 +38,41 @@ def readConfigFile():
 
     return config
 
-def writeToFile(outputList: str):
-    resultString = json.dumps(outputList, indent=4)
-    if config["OutputFile"] == ">":
-        print(resultString )
+def writeToFileAsHosts(outputList: str):
+    """
+    将结果以 hosts 格式写入文件。
+    """
+
+    pass
+
+def convertToJson(source: list):
+    """
+    将列表转换为 Sheas-Cealer 的 Json 格式的规则。
+    """
+    result = "[\n"
+
+    for item in source:
+        # 缩进
+        print(item)
+        result += "    ["
+        result += f"{str(item[0]).replace("'", '"')}, \"\", \"{item[2]}\""
+        result += "],\n"
+
+    result += "]"
+
+    return result
+
+def writeToFileAsJson(outputList: list):
+    """
+    将结果以 Json 格式写入文件。
+    """
+
+    # resultString = json.dumps(outputList, indent=4)
+    resultString = convertToJson(outputList)
+    if config["OutputFile"] == SIGN_WRITE_TO_CONSOLE:
+        print(resultString)
         return 0
-    elif config["OutputFile"] == "|":
+    elif config["OutputFile"] == SIGN_WRITE_TO_NUL:
         return 0
 
     try:
@@ -48,6 +85,10 @@ def writeToFile(outputList: str):
         return -1
 
 def readInputFile():
+    """
+    读取待处理网站列表文件。
+    """
+
     try:
         with open(config["WebListFile"], "r") as f:
             inputList = f.readlines()
@@ -67,8 +108,9 @@ if __name__ == '__main__':
             line = line[:-1]
         try:
             logger.LogInfo(f"Processing {line}...")
-            outputList.append(app.getDomainAnalize(line, config["ConvertIPv6ToIPv4"], config["SelectIP"]))
+            outputList.append(app.getDomainAnalize(line, config["ConvertIPv6ToIPv4"], config["SelectIP"],
+                                                   config["PingMaxTryTimes"]))
         except:
             logger.LogError(traceback.format_exc())
 
-    writeToFile(outputList)
+    writeToFileAsJson(outputList)

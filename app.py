@@ -9,8 +9,6 @@ import ping3
 import logger
 import traceback
 
-# -- MAJOR FUNCTIONS --
-
 def base64Decode(encoded_msg: str):
     # 将编码的字符串转换为字节格式
     encoded_bytes = encoded_msg.encode('utf-8')
@@ -24,10 +22,10 @@ def getInformationFromDomain(domain: str):
                        headers = requester.headers, proxies = random.choice(requester.ipGents))
     return res.json()
 
-def averageDelay(ipAddress: str):
+def averageDelay(ipAddress: str, maxTimes = 3):
     summary = 0
     realTimes = 0
-    for i in range(3):
+    for i in range(maxTimes):
         try:
             summary += ping3.ping(ipAddress)
             realTimes += 1
@@ -36,7 +34,8 @@ def averageDelay(ipAddress: str):
     return summary / realTimes if realTimes != 0 else None
 
 
-def analizeResponseInformation(response: str, convertFromIPv6toIPv4: bool = True, selectIP: bool = True):
+def analizeResponseInformation(response: str, convertFromIPv6toIPv4: bool = True, selectIP: bool = True,
+                               pingMaxTryTimes = 3):
     if not response or "Answer" not in response:
         raise AttributeError("Response is empty. 'Answer' no found.")
     majorRes = response["Answer"]
@@ -55,7 +54,7 @@ def analizeResponseInformation(response: str, convertFromIPv6toIPv4: bool = True
         for i in majorRes:
             ipAddress = i["data"]
             try:
-                delay = averageDelay(ipAddress)
+                delay = averageDelay(ipAddress, pingMaxTryTimes)
                 logger.LogInfo(f"Average delay of {ipAddress}: {delay}.")
                 if delay is None: continue
                 if miniDelay is None or delay < miniDelay:
@@ -83,8 +82,8 @@ def analizeResponseInformation(response: str, convertFromIPv6toIPv4: bool = True
 
     return [[f"*{requestUrl}"], "", str(applyIPAddres)]
 
-def getDomainAnalize(domain: str, convertFromIPv6toIPv4: bool = True, selectIP: bool = True):
-    return analizeResponseInformation(getInformationFromDomain(domain), convertFromIPv6toIPv4, selectIP)
+def getDomainAnalize(domain: str, convertFromIPv6toIPv4: bool = True, selectIP: bool = True, pingMaxTryTimes = 3):
+    return analizeResponseInformation(getInformationFromDomain(domain), convertFromIPv6toIPv4, selectIP, pingMaxTryTimes)
 
 def getFromWeb(url: str = "https://gitlab.com/gfwlist/gfwlist/raw/master/gfwlist.txt", readFromLocal: bool = False):
     is_general_list = False
